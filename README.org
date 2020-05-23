@@ -1,0 +1,92 @@
+* TODO: FIX: Title
+  The way i see this repo: =On self improvement by tracking and reproducing
+  environments (physical and mental scopewise, not CD/CI) that enhances self
+  learning capabilities= or =I keep forgetting everything and i need to write it
+  down=
+
+  Although knowledge doesn't necessarily makes you a good person, i figured i
+  might be better of not getting myself killed (yet) and see what i can
+  contribute to the world (or at least pretend to) as keyboard warrior.
+** Security
+*** Physical security
+*** On the net
+**** Developing
+***** PROGRESS: Self managing Github 2 Factor authentication codes
+      Manually signin in to every service i use since last[fn:1] killing =-999
+      initramrd= spree (AKA i once again switched OS) has proved me again (has
+      it not just once please?) that i barely manage myself, and with all thats
+      happening in the world right now: doubtful government policies to say the
+      least[fn:2] added to my exponentially increasing self diagnosed
+      /attention! distrust (ALL) humans disorder/[fn:3], i decided to put myself
+      on the dharma wheel ban list as originally intended and disconnect
+      (distrust) ALL from the (gray)net of trust.
+
+      There are several apps, such as Authenticator from google that handles
+      this for you, but it's *public-key cryptography* => *pair keys*, not a
+      *MITM service provider* for free, to each their own, ultimately.
+      
+      It's not a price i am willing to pay (again), yes, i said again[fn:5].
+      
+      As per the GitHub documentation, enable 2FA authentication, no surprises
+      there, backup keys, ascii export print them to your DNA and read the QR
+      code provided by GitHub.
+      
+      1. Right click and save the QR image to your file system to decode
+         =secret= and other alternative =keys= needed for self generating our
+         own keys.
+      2. ^ Joke, it's an SVG rendered on the GitHub page, so don't loose any
+         time and take a screnshot instead
+
+      I attached a =nix-shell= script to the GitHub repository, with all the
+      (not many) needed dependencies, i double dare/recommend using =nix=, and
+      join the self[fn:6] shoot in the foot community (it's not our feet tho).
+
+     #+BEGIN_SRC sh
+       [hao@REDACTED:~/dev/otp]$ nix-shell --pure # bare metal AKA your computer
+       [nix-shell:~/dev/otp]$ # long cat is in your nix-shells installing long packages names
+       [nix-shell:~/dev/otp]$ zbarimg /home/hao/Pictures/Screenshot_20200522_052245.png --nodbus # option fixes communication error with dbus, we don't need it anyway, we want the decoding capabilities only
+       QR-Code:otpauth://totp/GitHub:LaloHao?secret=REDACTED_SECRET_KEY&issuer=GitHub
+       scanned 1 barcode symbols from 1 images in 0.06 seconds
+       [nix-shell:~/dev/otp]$ python
+       Python 3.7.6 (default, Dec 18 2019, 19:23:55)
+       [GCC 9.2.0] on linux
+       Type "help", "copyright", "credits" or "license" for more information.
+       >>> import pyotp
+       >>> otp = pyotp.TOTP('REDACTED_SECRET_KEY')
+       >>> otp.now()
+       '327163'
+       >>>
+     #+END_SRC
+ 
+     Having that [[https://en.wikipedia.org/wiki/One-time_password][HOTP]] generated, confirm GitHub you can generate the keys by
+     copying and pasting it there, and that's all, start managing your logins on
+     your own,
+     
+     Theres some more stuff in the =nix-shell= file, like =qrencode=, you might
+     get some inspiration into implementing your own security methods[fn:8].
+
+****** References
+       - https://github.com/WhyNotHugo/totp-cli
+         - Last Accesed: <2020-05-23>
+       - [[https://help.github.com/en/github/authenticating-to-github/securing-your-account-with-two-factor-authentication-2fa]]
+         - Last Accesed: <2020-05-23>
+* Footnotes
+
+[fn:8] See: [[https://research.swtch.com/qr/draw][QArt Coder]]
+
+[fn:7] Either you learn nix pkgs/os, or rant about it.
+
+[fn:6] self: super: duper: pkgs[fn:7].
+
+[fn:5] ???????? Drama.
+
+[fn:4] There was something called /[REDACTED]/ before the archived link
+disappeared from our collective conscious memory, i swear (Not Mandella effect,
+nor Markov jails).
+
+[fn:3] I didn't know anything i swear. I was just random tree walking the [[*Physical security][IRLs]]
+when i noticed a new protein zero-day[fn:4].
+
+[fn:2] If you check the constitution, its not signed with my private key
+
+[fn:1] Probably a 3-4+ week period now | where now = <2020-05-23 Sat> => so aproximately <2020-04-26 Sat>, thats plently of "enough".
