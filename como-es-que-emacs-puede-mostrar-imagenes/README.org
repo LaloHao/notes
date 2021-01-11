@@ -1,0 +1,219 @@
+#+TITLE: Como es que Emacs puede mostrar imagenes
+
+#+BEGIN_QUOTE
+1. En el principio existia el buffer, en el buffer estaban pixeles, y los
+   pixeles estaban en interfaces tanto de texto como graficas.
+
+2. Este era el principio del renderizado.
+
+3. Toda renderizado muestra pixeles; sin ellos nada se muestra, fueron mostrados
+   aqui.
+
+4. En Pixeles estaban las interacciones, y las interacciones eran de los
+   usuarios.
+
+5. Y los usuarios usaban el software; mas el software no respondia.
+
+6. Fue un software creado por Open Source, el cual se llamaba driver.
+
+7. Este vino por testimonio de programadores, para que crearas interfaces.
+
+8. No era necesariamente high level, sino para abstraer la comunicacion directa
+   con el hardware.
+
+9. Aquella abstraccion era util, todo pantalla en este mundo la utilizó.
+-- Graficos 1:1-9
+#+END_QUOTE
+
+Preguntas relacionadas:
+
+- Como se puede mostrar texto?
+- Como se muestra cualquier cosa?
+
+Para eso se necesitan algunos conceptos de graficas y un poco de historia de
+Linux.
+
+* Framebuffer
+El framebuffer es una porcion de la RAM [fn:framebuffer] donde esta guardado el
+espacio de colores que representa la pantalla al mas bajo nivel de abstraccion.
+
+La manera mas comun en que se suele guardar es dividir cada pixel en 3 valores,
+siendo cada valor (canal de ahora en adelante) uno de los colores primarios:
+rojo, verde y azul; RGB en ingles (Red, Green, Blue).
+
+Usualmente los pixeles se guardan consecutivamente en orden de
+aparicion [fn:colorspace].
+
+#+CAPTION: Cada pixel un cuadro. Cada cuadro 3 canales (R, G y B)
+[[file:rgb.png]]
+
+En ciertos casos puedes leer y escribir (ambas) o solo escribir el buffer (no
+leer, implicaciones de seguridad o eficiencia tal vez).
+
+Puedes interactuar de manera directa a traves de la region de memoria que
+representa la pantalla/buffer [fn:buffer_manipulation-raspberry].
+
+O indirectamente a traves de llamadas al sistema [fn:buffer_manipulation-indirect].
+
+Cuando no se puede actuar de manera directa, hay que hacerlo de manera
+indirecta.
+
+*** Servidores de graficos (display server/window server)
+Una manera indirecta (ademas de opengl) de escribir pixeles a la pantalla (de
+ahora en adelante renderear) es utilizar servidores de graficos.
+
+En Linux el servidor de graficos mas utilizado es
+X.org [fn:display_server-linux], aunque existe una alternativa mas moderna:
+Wayland.
+
+En Windows el servidor grafico carece de nombre [citation needed] pero puedes
+interactuar con el a traves de GDI+ [fn:display_server-windows].
+
+En OSX es Quartz.
+
+Estas maneras de renderear, cabe destacar son nativas, es decir no funcionan en
+ninguna otra plataforma mas que la suya.
+
+Ademas de ser en su mayoria rendereadas por software.
+
+*** Graficos acelerados y graficos multiplataforma
+Ademas de las maneras nativas de renderear, existen alternativas como OpenGL,
+Vulkan [fn:opengl-and-vulkan] que ademas de ser multiplataforma, ofrecen
+renderizado por hardware, concepto usualmente denominado /aceleracion por
+hardware/.
+
+
+*** Tipos de framebuffers
+Existen buffers de texto, y buffers de pixeles.
+
+A grandes razgos hay 2 partes donde sucede rendereo:
+
+1. Cuando el bios se ejecuta, al encender la computadora [fn:framebuffer-bios]
+2. Cuando el bios ejecuta (cede el control) a algun otro programa, casi siempre
+   sera el sistema operativo
+3. Cuando el sistema operativo muestra algo (o el programa al que el BIOS le
+   cedio el control)
+
+Si dejamos de lado la programacion del BIOS por obvias razones de complejidad.
+
+El sistema operativo, afortunadamente nos provee una capa de abstraccion
+(drivers) que permite renderear directamente a la pantalla.
+
+#+CAPTION: Secuencia de /booteo/ de NixOS, un menu que practicamente cualquier usuario de Linux ha visto en su vida.
+[[fn:nixos-boot][file:nixos-grub.png]]
+
+Creditos de la imagen: [fn:nixos-boot].
+
+En Linux especificamente se puede usar el driver de *Direct Frame Buffer*
+(DirectFB) para renderear directamente a la memoria (Direct Memory Access).
+
+Una respuesta mas detallada en: [fn:framebuffer-detail]
+
+* De framebuffer a pixeles, de pixeles a interfaces
+*** De framebuffer a pixeles
+Los framebuffers contienen la informacion de los pixeles, pero estamos hablando
+de puntos en pantalla, algo muy abstracto que no refleja la manera comun en la que interactuamos con la computadora: teclado, mouse, texto, etc.
+
+Para eso se aplican tecnicas de abstraccion (en caso de hacer un sistema
+desde 0) o librerias (que nos permiten programar a nivel de componentes en lugar
+de pixeles).
+
+*** De pixeles a interfaces (Widget toolkits)
+Ya sea que uses una libreria o renderizado directo de pixeles
+(independientemente de si es rendereado directo a la memoria o acelerado por
+hardware), esta decision de coloca en un punto mas cercano o lejano de donde
+quieras interactuar como programador.
+
+Si escoges una libreria como OpenGL (pura sin nada extra), solo tienes algunos
+poligonos primitivos: puntos, lineas, triangulos, ..., y colores.
+
+Aunque incluso eso es bastante, comparado a tener solo pixeles.
+
+OpenGL (al igual que Vulkan y otras) tambien permite interactuar a nivel de
+pixeles, ademas de ser la base de librerias mas completas.
+
+En este punto es donde entran los *Widget Toolkits*, si quieres reducir el dolor
+del proceso, puedes usar alguna de las librerias mas conocidas:
+
+- GTK
+- QT
+- FLTK
+- TK
+- wxWidgets
+
+Emacs con entorno grafico (diferente al modo texto) puede utilizar:
+
+- Nexstep y Cocoa (en OSX)
+- Lucid y GTK (en Linux)
+- [fn:emacs-windows]??? (interfaz nativa en Windows)
+
+#+NAME: Inception
+#+CAPTION: Una imagen de Emacs mostrando una imagen de este escrito
+[[file:inception.png]]
+
+* Extra
+https://stackoverflow.com/questions/1527039/how-to-write-directly-to-linux-framebuffer
+
+https://www.man7.org/linux/man-pages/man2/ioctl.2.html
+
+https://wiki.gentoo.org/wiki/Xorg/Hardware_3D_acceleration_guide
+
+* Footnotes
+
+[fn:framebuffer] https://en.wikipedia.org/wiki/Framebuffer
+
+[fn:colorspace] Este es un concepto relacionado con el /espacio/ y /modelo/ de
+colores, otras formas comunes son =BGR=, =CMYK=, =HSL= y =HSV=.
+
+[fn:buffer_manipulation-raspberry]
+https://raspberrycompote.blogspot.com/2012/12/low-level-graphics-on-raspberry-pi-part_9509.html
+
+[fn:buffer_manipulation-indirect] Abstractamente puede ser cualquier sistema: ya
+sea todo proposito como linux, algo especifico como opengl donde tambien se usa
+el concepto de framebuffer, o incluso un microcontrolador con graficos
+integrados.
+
+[fn:display_server-linux] Nombrado usualmente con el prefijo Xorg (o en minuscula) en las
+librerias que provee cada gestor de paquetes.
+
+No lo suele instalar uno mismo, sino que se instala como parte del entorno
+grafico que utilizamos, a menos que busques especificamente no hacerlo.
+
+[fn:display_server-windows]
+https://docs.microsoft.com/en-us/dotnet/desktop/winforms/advanced/getting-started-with-graphics-programming?view=netframeworkdesktop-4.8
+
+[fn:opengl-and-vulkan] Ambos, OpenGL y Vulkan son manejados actualmente por Khronos
+
+Khronos /especifica/ la arquitectura de ambas interfaces (API, Aplication
+Programming Interface), lo que se usualmente se encuentra como /specification/
+en ingles.
+
+Miembros de la junta de Arquitectura de OpenGL (ARB en ingles) solian definir la
+/especificacion/, estos incluian a: 3Dlabs, Apple, ATI, Dell, IBM, Intel,
+Nvidia, SGI y Sun Microsystems [fn:opengl-architecture].
+
+Vulkan fue donado por AMD a Khronos.
+
+[fn:opengl-architecture] https://en.wikipedia.org/wiki/OpenGL_Architecture_Review_Board
+
+[fn:framebuffer-bios]
+Cuando se presiona el boton de encender en la computadora, se empiezan a leer
+las instrucciones de la ROM y se carga el programa que conocemos como BIOS.
+
+El BIOS tambien hace uso del framebuffer, pero este suele ser programado por el
+fabricante (o alguien con conocimiento equivalentes, ya que suele ser especifico
+para cada hardware), usualmente se le dice /firmware/ en lugar de /software/
+(programa), y ademas es particular para cada hardware (no es intercambiable).
+
+El BIOS al ejecutarse entonces toma la decision de ejecutar algun programa
+contenido en algun disco/memoria (lo que conocemos como /boot/) o modificarse a
+si mismo (lo que decimos configurar el BIOS, que basicamente equivale a
+modificar la ROM).
+
+[fn:nixos-boot]
+http://johnduhamel.io/posts/2019-01-18-nixos-install.html
+
+[fn:framebuffer-detail]
+https://unix.stackexchange.com/questions/20458/how-to-use-dev-fb0-as-a-console-from-userspace-or-output-text-to-it
+
+[fn:emacs-windows] https://emacsredux.com/blog/2020/09/23/using-emacs-on-windows-with-wsl2/
